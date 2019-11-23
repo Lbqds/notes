@@ -193,6 +193,9 @@ materialize阶段根据build阶段计算出的`outToSlots`和attribute(EnterIsla
 
 ## running
 
+一个`ActorGraphInterpreter`负责执行`GraphIsland`的逻辑。但由于fusing的缘故，一个`ActorGraphInterpreter`可能会执行多个stream的逻辑，比如sub-streams通过registerShell将`GraphInterpreterShell`注册到`ActorGraphInterpreter`。
+`ActorGraphInterpreter`负责从`GraphIsland`或actor(`StageActor`)或`AsyncCallback`接受异步消息`BoundaryEvent`并委托给`GraphInterpreterShell`处理。
+
 graph在materialize之后会立即执行，首先初始化`GraphStageLigic`，GraphInterpreter会根据每个Connection的状态及当前队列里的事件调用InHandler和OutHandler。
 
 在running阶段，chased optimization避免了入队和出队的开销。
