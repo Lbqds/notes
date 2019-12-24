@@ -250,7 +250,7 @@ getAsyncCallback返回一个AsyncCallback，通过AsyncCallback可以异步重�
 
 `GraphInterpreter.currentInterpreterOrNull`会获取当前运行的`GraphInterpreter`，如果当前Actor正在运行，则直接入队`shortCircuit`，避免额外的Actor消息发送的开销。由于fusing的原因，这里的优化对于SubStreams尤为重要。
 
-**NOTE**: 当多个线程同时调用AsyncCallback.invoke(event)时可能会造成race condition，即GraphInterpreter.currentInterpreter恰好是AsyncCallback所在的GraphStageLogic时，多个线程可能会同时调用interpreter.enqueueToShortCircuit，而enqueueToShortCircuit不是thread-safe的。在akka-stream的文档中也[提及了这一点](https://doc.akka.io/docs/akka/current/stream/stream-customize.html#using-asynchronous-side-channels)。
+[akka文档中](https://doc.akka.io/docs/akka/current/stream/stream-customize.html#using-asynchronous-side-channels)提到在stage constructor中调用`getAsyncCallback`会造成race condition，实际上这个问题已经在[这个PR](https://github.com/akka/akka/pull/24073)中修复了，但文档没有更新，在stage constructor中调用`getAsyncCallback`是安全的。
 
 ## SubStreams
 
