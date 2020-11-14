@@ -1,1 +1,1 @@
-notes about akka and scala
+notes
