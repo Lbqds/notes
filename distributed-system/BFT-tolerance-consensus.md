@@ -75,9 +75,19 @@ PBFT还会保证`responsiveness`，这一点到后面讨论Tendermint和HotStuff
 
 TODO
 
-## HotStuff
+## Basic HotStuff
 
-TODO
+Basic HotStuff算法跟PBFT类似，在半同步网络下对于节点数为`3f+1`的集群能够容忍最多`f`个恶意节点。跟PBFT相比，Basic HotStuff一轮共识需要三次投票，并且通过门限签名，所有的节点将投票发送给Leader，Leader将投票消息组合后再发送给其他节点。共识流程及证明论文描述的很清楚，这里我简单记录一下我在读论文时的一些疑惑。
+
+### decide阶段
+
+论文中证明部分清楚地表明了，通过三次投票，可以保证Basic HotStuff算法的安全性，但并没有说明为什么一定需要decide阶段。下面简单说明下为什么一定需要decide阶段。
+
+假设当前view为`v`，最新commit的块高度为`h`，`v+1`的leader发起新的一轮共识，记为`h'`；假如leader为non-faulty节点，并且收到`2f+1`个precommit投票之后，将块提交，此时leader挂了，而其他节点没有收到足够的precommit投票导致view change，虽然leader收到了`2f+1`个precommit投票表明至少有`f+1`个non-faulty节点的有对块`h'`的highest prepareQC，但如果`v+2`的leader为恶意节点，此恶意节点完全可以构造出一个新的与`h'`冲突的分叉块，同样满足协议规定的`safety rule`，因此会导致non-faulty节点最终在同一高度提交不同的块。而加上decide阶段就保证，当任一non-faulty节点处于decide阶段时，就表明至少有`f+1`个non-faulty节点已经lock，即使其他节点没有收到足够的commit投票，恶意节点也不可能会造成分叉(non-faulty节点在验证时不满足`safety rule`)，因此所有的non-faulty节点最终在同一高度会对提交相同的块。
+
+## Chained HotStuff
+
+Basic HotStuff协议每个阶段都是纯粹的投票操作，基于此，作者提出了Chained HotStuff。即当前的投票相当于上一个块的pre-commit投票，相当于上上个块的commit投票。在Chained HotStuff中，`view`跟`high`是相同的，如果某个`view`没有达成共识则当前高度的块为空块。在Chained HotStuff算法的最终描述中，有一点需要特别注意的就是只有当的direct parent才能提交。在论文的最后有一段关于必须是连续的direct parent的详细描述，简单来说就是如果允许非direct parent commit的话，那么在GST之前完全可能出现一种情况，即某个non-faulty节点已经commit了某条链的某个块，然后又收到了分叉链的某个满足liveness rule的块。同样对应到Basic HotStuff也可以理解为，非direct parent表明在中间的某个`view`没有达成共识，即针对某个块的三轮投票失败，因此无法commit，只有当三轮投票成功(即direct parent)才允许commit。
 
 ## Compare
 
