@@ -366,7 +366,7 @@ def tripleDecr[U <: Union : _exc : _state]: Freer[U, Unit] =
   decr[U] >> Exception.`catch`[U, Throwable, Unit](decr[U] >> decr[U], _ => Freer.pure[U, Unit](()))
 ```
 
-对于`tripleDecr`，在执行时对于不同的执行顺序应该能够得到不同的结果，一种是state的结果是0，另一种是state的结果是1，现在来看看上述实现的结果:
+对于`tripleDecr`，在执行时对于不同的执行顺序应该能够得到不同的结果，一种是state的结果是0(global interpretation，前两个decr执行)，另一种是state的结果是1(local interpretation，只有第一个decr执行)，现在来看看上述实现的结果:
 
 ```scala
 type ET = State :|: Exception :|: UNil
