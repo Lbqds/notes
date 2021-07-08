@@ -1,4 +1,4 @@
-# alephium
+# alephium introduction
 
 区块链的可扩展性问题的解决方案基本上可以划分为两类，分片和分层，其中分片算法的着重点主要在于:
 
